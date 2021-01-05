@@ -11,8 +11,8 @@ import {
 } from "react-bootstrap";
 
 const App = () => {
-  const [selectedItem1, setSelectedItem1] = useState(-1);
-  const [selectedItem2, setSelectedItem2] = useState(-1);
+  const [selectedItems1, setSelectedItems1] = useState([]);
+  const [selectedItems2, setSelectedItems2] = useState([]);
 
   const [motorcycles1, setMotorcycles1] = useState([
     "Suzuki",
@@ -28,9 +28,20 @@ const App = () => {
     "Harley-Davidson",
   ]);
 
+  const select = (item, selectedItems, setSelectedItems) => {
+    if (selectedItems.includes(item)) {
+      const list = selectedItems.slice();
+      list.splice(list.indexOf(item), 1);
+
+      setSelectedItems(list);
+    } else {
+      setSelectedItems([...selectedItems, item]);
+    }
+  };
+
   const move = (array1, array2) => {
-    setSelectedItem1(-1);
-    setSelectedItem2(-1);
+    setSelectedItems1([]);
+    setSelectedItems2([]);
     setMotorcycles1(array1);
     setMotorcycles2(array2);
   };
@@ -40,29 +51,40 @@ const App = () => {
   };
 
   const selectedToRight = () => {
-    if (selectedItem1 < 0) {
+    if (selectedItems1.length < 0) {
       return;
     }
 
     const list = motorcycles1.slice();
-    const item = list.splice(selectedItem1, 1);
+    const items = selectedItems1.map((item) =>
+      list.splice(list.indexOf(item), 1)
+    );
 
-    move(list, [...motorcycles2, item]);
+    move(list, [...motorcycles2, ...items]);
   };
 
   const selectedToLeft = () => {
-    if (selectedItem2 < 0) {
+    if (selectedItems2 < 0) {
       return;
     }
 
     const list = motorcycles2.slice();
-    const item = list.splice(selectedItem2, 1);
+    const items = selectedItems2.map((item) =>
+      list.splice(list.indexOf(item), 1)
+    );
 
-    move([...motorcycles1, item], list);
+    move([...motorcycles1, ...items], list);
   };
 
   const allToLeft = () => {
     move([...motorcycles1, ...motorcycles2], []);
+  };
+
+  const deleteItems = () => {
+    const list = motorcycles1.slice();
+    selectedItems1.forEach((item) => list.splice(list.indexOf(item), 1));
+
+    move(list, motorcycles2);
   };
 
   return (
@@ -73,8 +95,10 @@ const App = () => {
             {motorcycles1.map((motorcycle, index) => (
               <ListGroup.Item
                 key={index}
-                active={selectedItem1 === index}
-                onClick={() => setSelectedItem1(index)}
+                active={selectedItems1.includes(motorcycle)}
+                onClick={() =>
+                  select(motorcycle, selectedItems1, setSelectedItems1)
+                }
               >
                 {motorcycle}
               </ListGroup.Item>
@@ -102,8 +126,10 @@ const App = () => {
             {motorcycles2.map((motorcycle, index) => (
               <ListGroup.Item
                 key={index}
-                active={selectedItem2 === index}
-                onClick={() => setSelectedItem2(index)}
+                active={selectedItems2.includes(motorcycle)}
+                onClick={() =>
+                  select(motorcycle, selectedItems2, setSelectedItems2)
+                }
               >
                 {motorcycle}
               </ListGroup.Item>
@@ -111,6 +137,9 @@ const App = () => {
           </ListGroup>
         </Col>
       </Row>
+      <Button className="mt-4" onClick={deleteItems}>
+        Delete
+      </Button>
     </Container>
   );
 };
